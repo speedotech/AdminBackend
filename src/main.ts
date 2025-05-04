@@ -13,17 +13,16 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  // Security
+  app.setGlobalPrefix('api');
+
   app.use(helmet());
   app.enableCors({
     origin: configService.get<string>('CORS_ORIGIN', 'http://localhost:3000'),
     credentials: true,
   });
 
-  // Performance
   app.use(compression());
 
-  // Validation
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     transform: true,
@@ -32,6 +31,6 @@ async function bootstrap() {
 
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
-  logger.log(`Application is running on: http://localhost:${port}`);
+  logger.log(`Application is running on: http://localhost:${port}/api`);
 }
 bootstrap(); 
