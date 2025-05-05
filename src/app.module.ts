@@ -5,6 +5,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { LeadsModule } from './leads/leads.module';
 import { HealthModule } from './health/health.module';
+import { MasterStatusModule } from './master-status/master-status.module';
 import configuration from './config/configuration';
 import { databaseConfig } from './config/database.config';
 
@@ -20,12 +21,15 @@ import { databaseConfig } from './config/database.config';
       useFactory: databaseConfig,
       inject: [ConfigService],
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 10,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     LeadsModule,
     HealthModule,
+    MasterStatusModule,
   ],
   providers: [
     {
@@ -34,4 +38,4 @@ import { databaseConfig } from './config/database.config';
     },
   ],
 })
-export class AppModule {} 
+export class AppModule {}

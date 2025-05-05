@@ -13,4 +13,4 @@ export class HealthController {
       environment: this.configService.get<string>('NODE_ENV', 'development'),
     };
   }
-} 
+}

@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('leads')
 export class Lead {
@@ -23,7 +29,11 @@ export class Lead {
   @Column({ length: 100, nullable: true })
   purpose?: string;
 
-  @Column({ type: 'enum', enum: ['NEW', 'REPEAT', 'UNPAID-REPEAT'], nullable: true })
+  @Column({
+    type: 'enum',
+    enum: ['NEW', 'REPEAT', 'UNPAID-REPEAT'],
+    nullable: true,
+  })
   user_type?: 'NEW' | 'REPEAT' | 'UNPAID-REPEAT';
 
   @Column({ length: 50, nullable: true })
@@ -95,25 +105,72 @@ export class Lead {
   @Column({
     type: 'enum',
     enum: [
-      'LEAD-NEW', 'LEAD-INPROCESS', 'LEAD-HOLD', 'APPLICATION-NEW',
-      'APPLICATION-INPROCESS', 'APPLICATION-HOLD', 'DUPLICATE', 'SYSTEM-REJECT',
-      'REJECT', 'APPLICATION-RECOMMENDED', 'APPLICATION-SEND-BACK', 'SANCTION',
-      'DISBURSE-PENDING', 'DISBURSED', 'CANCEL', 'PART-PAYMENT', 'CLOSED',
-      'SETTLED', 'WRITEOFF', 'DISBURSAL-NEW', 'DISBURSAL-INPROCESS',
-      'DISBURSAL-HOLD', 'DISBURSED-WAIVED', 'DISBURSAL-SEND-BACK',
-      'LEAD-REGISTRATION', 'LEAD-PARTIAL', 'AUDIT-NEW', 'AUDIT-INPROCESS',
-      'AUDIT-HOLD', 'AUDIT-RECOMMENDED'
-    ]
+      'LEAD-NEW',
+      'LEAD-INPROCESS',
+      'LEAD-HOLD',
+      'APPLICATION-NEW',
+      'APPLICATION-INPROCESS',
+      'APPLICATION-HOLD',
+      'DUPLICATE',
+      'SYSTEM-REJECT',
+      'REJECT',
+      'APPLICATION-RECOMMENDED',
+      'APPLICATION-SEND-BACK',
+      'SANCTION',
+      'DISBURSE-PENDING',
+      'DISBURSED',
+      'CANCEL',
+      'PART-PAYMENT',
+      'CLOSED',
+      'SETTLED',
+      'WRITEOFF',
+      'DISBURSAL-NEW',
+      'DISBURSAL-INPROCESS',
+      'DISBURSAL-HOLD',
+      'DISBURSED-WAIVED',
+      'DISBURSAL-SEND-BACK',
+      'LEAD-REGISTRATION',
+      'LEAD-PARTIAL',
+      'AUDIT-NEW',
+      'AUDIT-INPROCESS',
+      'AUDIT-HOLD',
+      'AUDIT-RECOMMENDED',
+    ],
   })
   status!: string;
 
   @Column({
     type: 'enum',
     enum: [
-      'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10',
-      'S11', 'S12', 'S13', 'S14', 'S15', 'S16', 'S17', 'S18', 'S19',
-      'S20', 'S21', 'S22', 'S25', 'S30', 'S31', 'S32', 'S33', 'S34'
-    ]
+      'S1',
+      'S2',
+      'S3',
+      'S4',
+      'S5',
+      'S6',
+      'S7',
+      'S8',
+      'S9',
+      'S10',
+      'S11',
+      'S12',
+      'S13',
+      'S14',
+      'S15',
+      'S16',
+      'S17',
+      'S18',
+      'S19',
+      'S20',
+      'S21',
+      'S22',
+      'S25',
+      'S30',
+      'S31',
+      'S32',
+      'S33',
+      'S34',
+    ],
   })
   stage!: string;
 
@@ -144,7 +201,11 @@ export class Lead {
   @Column({ length: 255, nullable: true })
   imei_no?: string;
 
-  @Column({ unsigned: true, default: 0, comment: "0=>can't recommend, 1=>Can Recommend" })
+  @Column({
+    unsigned: true,
+    default: 0,
+    comment: "0=>can't recommend, 1=>Can Recommend",
+  })
   application_status!: number;
 
   @Column({ type: 'datetime', nullable: true })
@@ -174,13 +235,21 @@ export class Lead {
   @Column({ unsigned: true, nullable: true })
   lead_fi_scm_residence_assign_user_id?: number;
 
-  @Column({ unsigned: true, nullable: true, comment: '1=>pending,2=>postive,3=>negative' })
+  @Column({
+    unsigned: true,
+    nullable: true,
+    comment: '1=>pending,2=>postive,3=>negative',
+  })
   lead_fi_residence_status_id?: number;
 
   @Column({ unsigned: true, nullable: true })
   lead_fi_scm_office_assign_user_id?: number;
 
-  @Column({ unsigned: true, nullable: true, comment: '1=>pending,2=>postive,3=>negative' })
+  @Column({
+    unsigned: true,
+    nullable: true,
+    comment: '1=>pending,2=>postive,3=>negative',
+  })
   lead_fi_office_status_id?: number;
 
   @Column({ length: 500, nullable: true })
@@ -258,7 +327,10 @@ export class Lead {
   @Column({ type: 'datetime', nullable: true })
   lead_closure_assign_datetime?: Date;
 
-  @Column({ nullable: true, comment: '0=>Customer, 1=>Campaign, 2=> Self Model, 3=> Assisted Model' })
+  @Column({
+    nullable: true,
+    comment: '0=>Customer, 1=>Campaign, 2=> Self Model, 3=> Assisted Model',
+  })
   lead_doable_to_application_status?: number;
 
   @Column({ type: 'datetime', nullable: true })
@@ -303,7 +375,11 @@ export class Lead {
   @Column({ unsigned: true, default: 0 })
   lead_black_list_flag!: number;
 
-  @Column({ unsigned: true, default: 0, comment: 'Lead Straight-Through Processing' })
+  @Column({
+    unsigned: true,
+    default: 0,
+    comment: 'Lead Straight-Through Processing',
+  })
   lead_stp_flag!: number;
 
   @Column({ unsigned: true, nullable: true })
@@ -326,4 +402,4 @@ export class Lead {
 
   @Column({ unsigned: true, nullable: true })
   lead_customer_profile_id?: number;
-} 
+}

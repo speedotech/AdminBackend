@@ -6,14 +6,15 @@
   "scripts": {
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "build": "nest build"
+    "build": "npm run lint && npm run format && nest build",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
-    "@nestjs/sequelize": "^10.0.0",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
     "class-transformer": "^0.5.1",
@@ -22,7 +23,6 @@
     "dotenv": "^16.0.3",
     "helmet": "^8.1.0",
     "mysql2": "^3.14.1",
-    "sequelize": "^6.37.7",
     "typeorm": "^0.3.22",
     "typeorm-extension": "^3.7.1"
   },
@@ -30,14 +30,14 @@
     "@eslint/js": "^9.26.0",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
-    "@nestjs/testing": "^10.0.0",
     "@types/compression": "^1.7.5",
     "@types/helmet": "^0.0.48",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.3.1",
     "globals": "^16.0.0",
-    "typescript": "^5.0.0",
-    "typescript-eslint": "^8.31.1"
+    "typescript": "^5.0.0"
   }
 }
