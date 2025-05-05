@@ -6,8 +6,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { LeadsModule } from './leads/leads.module';
 import { HealthModule } from './health/health.module';
 import { MasterStatusModule } from './master-status/master-status.module';
+import { UsersModule } from './users/users.module';
 import configuration from './config/configuration';
 import { databaseConfig } from './config/database.config';
+import { Logger } from '@nestjs/common';
 
 @Module({
   imports: [
@@ -23,13 +25,14 @@ import { databaseConfig } from './config/database.config';
     }),
     ThrottlerModule.forRoot([
       {
-        ttl: 60000,
-        limit: 10,
+        ttl: parseInt(process.env.THROTTLE_TTL || '60000', 10),
+        limit: parseInt(process.env.THROTTLE_LIMIT || '10', 10),
       },
     ]),
     LeadsModule,
     HealthModule,
     MasterStatusModule,
+    UsersModule,
   ],
   providers: [
     {
@@ -38,4 +41,8 @@ import { databaseConfig } from './config/database.config';
     },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private configService: ConfigService) {
+    const logger = new Logger('AppModule');
+  }
+}

@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 export const databaseConfig = (
   configService: ConfigService,
 ): TypeOrmModuleOptions => {
+  
   const config: TypeOrmModuleOptions = {
     type: 'mysql',
     host: configService.get('database.host'),
@@ -12,11 +13,12 @@ export const databaseConfig = (
     password: configService.get('database.password'),
     database: configService.get('database.database'),
     synchronize: configService.get('database.synchronize'),
-    logging: configService.get('database.logging'),
+    // logging: true,
+    entities: ['dist/**/*.entity{.ts,.js}'],
     extra: {
       connectionLimit: 10,
     },
   };
-
+  
   return config;
 };

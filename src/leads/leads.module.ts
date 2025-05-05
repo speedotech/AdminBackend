@@ -4,11 +4,22 @@ import { LeadsService } from './leads.service';
 import { LeadsController } from './leads.controller';
 import { Lead } from './entities/lead.entity';
 import { MasterStatusModule } from '../master-status/master-status.module';
+import { UsersModule } from '../users/users.module';
+import { Logger } from '@nestjs/common';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Lead]), MasterStatusModule],
+  imports: [
+    TypeOrmModule.forFeature([Lead]),
+    MasterStatusModule,
+    UsersModule
+  ],
   controllers: [LeadsController],
   providers: [LeadsService],
   exports: [LeadsService],
 })
-export class LeadsModule {}
+export class LeadsModule {
+  constructor() {
+    const logger = new Logger('LeadsModule');
+    logger.log('LeadsModule initialized');
+  }
+}

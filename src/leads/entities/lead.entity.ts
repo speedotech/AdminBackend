@@ -102,76 +102,10 @@ export class Lead {
   @Column({ length: 150, nullable: true })
   coordinates?: string;
 
-  @Column({
-    type: 'enum',
-    enum: [
-      'LEAD-NEW',
-      'LEAD-INPROCESS',
-      'LEAD-HOLD',
-      'APPLICATION-NEW',
-      'APPLICATION-INPROCESS',
-      'APPLICATION-HOLD',
-      'DUPLICATE',
-      'SYSTEM-REJECT',
-      'REJECT',
-      'APPLICATION-RECOMMENDED',
-      'APPLICATION-SEND-BACK',
-      'SANCTION',
-      'DISBURSE-PENDING',
-      'DISBURSED',
-      'CANCEL',
-      'PART-PAYMENT',
-      'CLOSED',
-      'SETTLED',
-      'WRITEOFF',
-      'DISBURSAL-NEW',
-      'DISBURSAL-INPROCESS',
-      'DISBURSAL-HOLD',
-      'DISBURSED-WAIVED',
-      'DISBURSAL-SEND-BACK',
-      'LEAD-REGISTRATION',
-      'LEAD-PARTIAL',
-      'AUDIT-NEW',
-      'AUDIT-INPROCESS',
-      'AUDIT-HOLD',
-      'AUDIT-RECOMMENDED',
-    ],
-  })
+  @Column({ type: 'varchar', length: 100 })
   status!: string;
 
-  @Column({
-    type: 'enum',
-    enum: [
-      'S1',
-      'S2',
-      'S3',
-      'S4',
-      'S5',
-      'S6',
-      'S7',
-      'S8',
-      'S9',
-      'S10',
-      'S11',
-      'S12',
-      'S13',
-      'S14',
-      'S15',
-      'S16',
-      'S17',
-      'S18',
-      'S19',
-      'S20',
-      'S21',
-      'S22',
-      'S25',
-      'S30',
-      'S31',
-      'S32',
-      'S33',
-      'S34',
-    ],
-  })
+  @Column({ type: 'varchar', length: 10 })
   stage!: string;
 
   @Column({ unsigned: true, nullable: true })
@@ -211,10 +145,10 @@ export class Lead {
   @Column({ type: 'datetime', nullable: true })
   lead_application_created_on?: Date;
 
-  @CreateDateColumn({ type: 'datetime' })
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_on!: Date;
 
-  @UpdateDateColumn({ type: 'datetime', nullable: true })
+  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updated_on?: Date;
 
   @Column({ length: 1, nullable: true, comment: 'Y=> yes' })
