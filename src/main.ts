@@ -34,10 +34,12 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  app.use(compression({
-    level: 6,
-    threshold: 1024,
-  }));
+  app.use(
+    compression({
+      level: 6,
+      threshold: 1024,
+    }),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({

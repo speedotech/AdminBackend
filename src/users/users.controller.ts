@@ -9,4 +9,4 @@ export class UsersController {
   getUserByUserId(@Query('user_id') user_id: number) {
     return this.usersService.getUserByUserId(user_id);
   }
-} 
+}

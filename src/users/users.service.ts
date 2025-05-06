@@ -1,6 +1,10 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -14,20 +18,34 @@ export class UsersService {
     if (!user_id || isNaN(user_id)) {
       throw new BadRequestException('Invalid user_id provided');
     }
-    return this.usersRepository.findOne({ where: { user_id }, select: ['user_id', 'user_name'] });
+    return this.usersRepository.findOne({
+      where: { user_id },
+      select: ['user_id', 'user_name'],
+    });
   }
 
   async findByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({ where: { email } });
   }
-  
+
   async getUserByUserId(user_id: number) {
-    const userDetails = await this.usersRepository.findOne({ where: { user_id }, select: ['user_id', 'user_name'] });
-    
-    if(!userDetails) {
+    const userDetails = await this.usersRepository.findOne({
+      where: { user_id },
+      select: ['user_id', 'user_name'],
+    });
+
+    if (!userDetails) {
       throw new NotFoundException(`User not found`);
     }
 
     return userDetails;
   }
-} 
+
+  async getActiveUsers() {
+    const activeUsers = await this.usersRepository.find({
+      where: { user_active: 1, labels: In(['CR1', 'CR2', 'CR3']) },
+      select: ['user_id', 'user_name'],
+    });
+    return activeUsers;
+  }
+}

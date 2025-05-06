@@ -1,7 +1,7 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -9,6 +9,8 @@ import { Lead } from './entities/lead.entity';
 import { MasterStatusService } from '../master-status/master-status.service';
 import { UpdateLeadStatusDto } from './dtos/UpdateLeadStatus.dto';
 import { UsersService } from '../users/users.service';
+import { LeadFollowupService } from '../lead-followup/lead-followup.service';
+import { LeadFollowup } from '../lead-followup/entities/lead-followup.entity';
 
 @Injectable()
 export class LeadsService {
@@ -16,43 +18,37 @@ export class LeadsService {
     @InjectRepository(Lead)
     private leadsRepository: Repository<Lead>,
     private readonly masterStatusService: MasterStatusService,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
+    private readonly leadFollowupService: LeadFollowupService,
   ) {}
 
-  // private async validateLeadExists(id: number): Promise<Lead> {
-  //   const lead = await this.leadsRepository.findOne({ where: { lead_id: id } });
-  //   if (!lead) {
-  //     throw new NotFoundException(`Lead with ID ${id} not found`);
-  //   }
-  //   return lead;
-  // }
-
-  // private async validateEmailUnique(email: string, excludeId?: number): Promise<void> {
-  //   const existingLead = await this.leadsRepository.findOne({
-  //     where: { email, ...(excludeId && { id: excludeId }) },
-  //   });
-  //   if (existingLead) {
-  //     throw new BadRequestException('Email already exists');
-  //   }
-  // }
-
   async getLeadStatusByLeadId(lead_id: number) {
-    let [lead, masterStatus] = await Promise.all([
-      this.leadsRepository.findOne({ 
+    let [lead, masterStatus, activeUsers] = await Promise.all([
+      this.leadsRepository.findOne({
         where: { lead_id },
-        select: ['lead_id','status', 'stage', 'lead_status_id', 'remark', 'lead_screener_assign_user_id']
+        select: [
+          'lead_id',
+          'status',
+          'stage',
+          'lead_status_id',
+          'remark',
+          'lead_screener_assign_user_id',
+        ],
       }),
       this.masterStatusService.getActiveMasterStatuses(),
+      this.usersService.getActiveUsers(),
     ]);
 
     if (!lead) {
       throw new NotFoundException(`Lead with ID ${lead_id} not found`);
     }
 
-    let userName : string | undefined = '';
-    if(lead.lead_screener_assign_user_id) {
-      const user = await this.usersService.findOne(lead.lead_screener_assign_user_id);
-      if(user) {
+    let userName: string | undefined = '';
+    if (lead.lead_screener_assign_user_id) {
+      const user = await this.usersService.findOne(
+        lead.lead_screener_assign_user_id,
+      );
+      if (user) {
         userName = user.user_name;
       }
     }
@@ -60,8 +56,7 @@ export class LeadsService {
     const userData = {
       user_id: lead.lead_screener_assign_user_id,
       user_name: userName,
-    }
-
+    };
 
     if (!masterStatus || masterStatus.length === 0) {
       throw new NotFoundException(`Master Status not found`);
@@ -75,7 +70,7 @@ export class LeadsService {
       throw new NotFoundException(`Lead Status not found`);
     }
 
-    return { lead, leadStatus, masterStatus, userData };
+    return { lead, leadStatus, masterStatus, userData, activeUsers };
   }
 
   async updateLeadStatus(body: UpdateLeadStatusDto) {
@@ -91,17 +86,47 @@ export class LeadsService {
     }
 
     if (!masterStatus) {
-      throw new NotFoundException(`Lead Status with ID ${lead_status_id} not found`);
+      throw new NotFoundException(
+        `Lead Status with ID ${lead_status_id} not found`,
+      );
+    }
+
+    if (user_id) {
+      const user = await this.usersService.findOne(user_id);
+      if (!user) {
+        throw new NotFoundException(`User with ID ${user_id} not found`);
+      }
+    }
+
+    if (masterStatus.status_name === 'LEAD-NEW') {
+      lead.lead_screener_assign_user_id = user_id;
+      lead.lead_credit_assign_user_id = null;
+    } else if (
+      masterStatus.status_name === 'APPLICATION-NEW' ||
+      masterStatus.status_name === 'APPLICATION-INPROCESS'
+    ) {
+      lead.lead_credit_assign_user_id = user_id;
     }
 
     lead.lead_status_id = lead_status_id;
-    lead.remark = remark;
     lead.status = masterStatus.status_name;
     lead.stage = masterStatus.status_stage;
-    lead.lead_credit_assign_user_id = user_id;
-    lead.lead_screener_assign_user_id = user_id;
+    lead.remark = remark;
 
-    await this.leadsRepository.save(lead);
+    const leadFollowup = new LeadFollowup();
+    leadFollowup.lead_id = lead_id;
+    leadFollowup.user_id = 219;
+    leadFollowup.status = masterStatus.status_name;
+    leadFollowup.stage = masterStatus.status_stage;
+    leadFollowup.created_on = new Date();
+    leadFollowup.updated_on = new Date();
+    leadFollowup.remarks = remark;
 
+    await Promise.all([
+      this.leadFollowupService.createFollowUp(leadFollowup),
+      this.leadsRepository.save(lead),
+    ]);
+
+    return { message: 'Lead status updated successfully' };
   }
 }

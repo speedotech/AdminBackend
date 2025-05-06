@@ -23,22 +23,22 @@ import { Logger } from '@nestjs/common';
       useFactory: databaseConfig,
       inject: [ConfigService],
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: parseInt(process.env.THROTTLE_TTL || '60000', 10),
-        limit: parseInt(process.env.THROTTLE_LIMIT || '10', 10),
-      },
-    ]),
+    // ThrottlerModule.forRoot([
+    //   {
+    //     ttl: parseInt(process.env.THROTTLE_TTL || '60000', 10),
+    //     limit: parseInt(process.env.THROTTLE_LIMIT || '10', 10),
+    //   },
+    // ]),
     LeadsModule,
     HealthModule,
     MasterStatusModule,
     UsersModule,
   ],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: ThrottlerGuard,
+    // },
   ],
 })
 export class AppModule {

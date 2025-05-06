@@ -26,5 +26,4 @@ export class LeadsController {
   updateLeadStatus(@Body() body: UpdateLeadStatusDto) {
     return this.leadsService.updateLeadStatus(body);
   }
-
 }

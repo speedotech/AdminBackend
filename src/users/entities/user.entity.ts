@@ -62,7 +62,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: ['Active', 'InActive', 'Closed', 'Blocked'],
-    default: 'Active'
+    default: 'Active',
   })
   status!: string;
 
@@ -96,7 +96,11 @@ export class User {
   @Column({ unsigned: true, nullable: true })
   updated_by?: number;
 
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
   updated_on!: Date;
 
   @Column({ nullable: true })
@@ -105,10 +109,18 @@ export class User {
   @Column({ length: 150, nullable: true })
   user_dialer_id?: string;
 
-  @Column({ unsigned: true, default: 1, comment: '1=>"Active", 2=>"InActive", 3=>"Closed", 4=>"Blocked"' })
+  @Column({
+    unsigned: true,
+    default: 1,
+    comment: '1=>"Active", 2=>"InActive", 3=>"Closed", 4=>"Blocked"',
+  })
   user_status_id!: number;
 
-  @Column({ unsigned: true, nullable: true, comment: '1=> Below Inc 50K, 2=> Above 50K' })
+  @Column({
+    unsigned: true,
+    nullable: true,
+    comment: '1=> Below Inc 50K, 2=> Above 50K',
+  })
   user_allocation_type_id?: number;
 
   @Column({ default: 0 })
@@ -140,4 +152,4 @@ export class User {
 
   @Column({ length: 255, nullable: true })
   user_token?: string;
-} 
+}

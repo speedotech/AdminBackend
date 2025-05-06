@@ -16,7 +16,7 @@ export default () => ({
   security: {
     corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     rateLimitTtl: parseInt(process.env.RATE_LIMIT_TTL || '60000', 10),
-    rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '10', 10),
+    rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '60', 10),
   },
   logging: {
     level: process.env.LOG_LEVEL || 'debug',

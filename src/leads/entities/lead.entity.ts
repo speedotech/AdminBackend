@@ -148,7 +148,11 @@ export class Lead {
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_on!: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
   updated_on?: Date;
 
   @Column({ length: 1, nullable: true, comment: 'Y=> yes' })
@@ -216,8 +220,8 @@ export class Lead {
   @Column({ type: 'datetime', nullable: true })
   lead_screener_recommend_datetime?: Date;
 
-  @Column({ unsigned: true, nullable: true })
-  lead_credit_assign_user_id?: number;
+  @Column({ type: 'int', unsigned: true, nullable: true })
+  lead_credit_assign_user_id?: number | null;
 
   @Column({ type: 'datetime', nullable: true })
   lead_credit_assign_datetime?: Date;
