@@ -116,6 +116,7 @@ export class LeadsService {
     const leadFollowup = new LeadFollowup();
     leadFollowup.lead_id = lead_id;
     leadFollowup.user_id = 219;
+    leadFollowup.lead_followup_status_id = masterStatus.status_id;
     leadFollowup.customer_id = lead.customer_id;
     leadFollowup.status = masterStatus.status_name;
     leadFollowup.stage = masterStatus.status_stage;
