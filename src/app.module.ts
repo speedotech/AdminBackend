@@ -16,7 +16,12 @@ import { Logger } from '@nestjs/common';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
-      envFilePath: ['.env', `.env.${process.env.NODE_ENV || 'development'}`],
+      envFilePath: [
+        '.env',
+        `.env.${process.env.NODE_ENV || 'development'}`,
+        'dist/.env',
+      ],
+      cache: true,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

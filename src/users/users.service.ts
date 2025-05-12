@@ -20,7 +20,7 @@ export class UsersService {
     }
     return this.usersRepository.findOne({
       where: { user_id },
-      select: ['user_id', 'user_name'],
+      select: ['user_id', 'user_name', 'name'],
     });
   }
 
@@ -43,8 +43,11 @@ export class UsersService {
 
   async getActiveUsers() {
     const activeUsers = await this.usersRepository.find({
-      where: { user_active: 1, labels: In(['CR1', 'CR2', 'CR3']) },
-      select: ['user_id', 'user_name'],
+      where: {
+        user_active: 1,
+        labels: In(['CR1', 'CR2', 'CR3', 'DS1', 'DS2']),
+      },
+      select: ['user_id', 'name'],
     });
     return activeUsers;
   }

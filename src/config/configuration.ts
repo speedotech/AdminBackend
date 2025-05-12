@@ -21,4 +21,5 @@ export default () => ({
   logging: {
     level: process.env.LOG_LEVEL || 'debug',
   },
+  nodeEnv: process.env.NODE_ENV || 'development',
 });
