@@ -7,6 +7,7 @@ export class FetchPayableAmountDto {
 
   @IsNotEmpty()
   @IsString()   // You said programId is string content, not number
+  
   programId!: string;
 
   @IsNotEmpty()

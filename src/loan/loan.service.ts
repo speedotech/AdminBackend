@@ -1,8 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectConnection } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-
 
 @Injectable()
 export class LoanService {
@@ -43,12 +46,7 @@ export class LoanService {
         loan.loan_total_received_amount,
         loan.loan_principle_outstanding_amount,
         loan.loan_interest_outstanding_amount,
-        loan.loan_penalty_outstanding_amount,
-        loan.loan_total_payable_amount	,
-        loan.loan_penalty_outstanding_amount,
-        
-        loan.loan_interest_outstanding_amount	,
-        loan.loan_penalty_outstanding_amount	
+        loan.loan_penalty_outstanding_amount
       FROM loan
       JOIN leads ON loan.lead_id = leads.lead_id
       JOIN lead_customer ON leads.lead_customer_profile_id = lead_customer.customer_lead_id
@@ -65,10 +63,26 @@ export class LoanService {
           : `Loan account not found for given mobile number`,
       );
     }
+
     const ref_id = uuidv4();
+
     return {
       ref_id,
-      ...result[0],
+      loan_no: result[0].loan_no,
+      customer_name: result[0].customer_name,
+      mobile: result[0].mobile,
+      email: result[0].email,
+      emi_amount: result[0].emi_amount,
+      overdue_amount: result[0].overdue_amount,
+      bill_date: result[0].bill_date,
+      due_date: result[0].due_date,
+      loan_status: result[0].loan_status,
+      product: result[0].product,
+      total_received_amount: result[0].loan_total_received_amount,
+      principle_outstanding: result[0].loan_principle_outstanding_amount,
+      interest_outstanding: result[0].loan_interest_outstanding_amount,
+      penalty_outstanding: result[0].loan_penalty_outstanding_amount,
+      total_payable_amount: result[0].emi_amount,
     };
   }
 }
