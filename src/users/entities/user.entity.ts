@@ -145,7 +145,7 @@ export class User {
   user_login_allow_time_status!: number;
 
   @Column({ nullable: true })
-  user_login_allow_start_time?: Date;
+  user_login_allow_start_time?: Date;                      
 
   @Column({ nullable: true })
   user_login_allow_end_time?: Date;

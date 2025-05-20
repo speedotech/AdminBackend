@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import configuration from './config/configuration';
 import { databaseConfig } from './config/database.config';
 import { Logger } from '@nestjs/common';
+import { LoanModule } from './loan/loan.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { Logger } from '@nestjs/common';
     HealthModule,
     MasterStatusModule,
     UsersModule,
+    LoanModule
   ],
   providers: [
     // {

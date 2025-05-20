@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import * as compression from 'compression';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response, NextFunction } from 'express';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -14,6 +16,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
+  // Set global prefix for all routes
   app.setGlobalPrefix('api');
 
   // Add request logging middleware
@@ -28,7 +31,7 @@ async function bootstrap() {
 
   app.use(helmet());
   app.enableCors({
-    origin: true, // Allow all origins
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: [
@@ -54,6 +57,24 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  // Log all registered routes for debugging
+  const server = app.getHttpAdapter().getInstance();
+  logger.log('Registered routes:');
+  (server._router.stack as any[]).forEach((middleware: any) => {
+    if (middleware.route) {
+      // routes registered directly on the app
+      logger.log(`${middleware.route.path} [${Object.keys(middleware.route.methods).join(', ')}]`);
+    } else if (middleware.name === 'router') {
+      // router middleware
+      middleware.handle.stack.forEach((handler: any) => {
+        const route = handler.route;
+        if (route) {
+          logger.log(`${route.path} [${Object.keys(route.methods).join(', ')}]`);
+        }
+      });
+    }
+  });
 
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
