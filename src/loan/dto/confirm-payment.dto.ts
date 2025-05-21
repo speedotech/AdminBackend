@@ -1,39 +1,15 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsOptional } from 'class-validator';
 
-export class ConfirmPaymentDto {
-  @IsString()
+export class ConfirmBbpsPaymentDto {
   @IsNotEmpty()
-  txn_ref_no: string = '';
+  @IsString()
+  transactionId!: string;
 
-  @IsString()
   @IsNotEmpty()
-  txn_date: string = '';
+  @IsNumber()
+  amount!: number;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  amount: string = '';
-
-  @IsString()
-  @IsNotEmpty()
-  channel: string = '';
-
-  @IsString()
-  @IsNotEmpty()
-  mode: string = '';
-
-  @IsString()
-  @IsNotEmpty()
-  payment_type: string = '';
-
-  @IsString()
-  @IsNotEmpty()
-  ref_id: string = '';
-
-  @IsString()
-  @IsNotEmpty()
-  mobile: string = '';
-
-  @IsString()
-  @IsNotEmpty()
-  outlet_id: string = '';
+  remarks?: string;
 }

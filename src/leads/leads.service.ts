@@ -49,7 +49,7 @@ export class LeadsService {
         lead.lead_screener_assign_user_id,
       );
       if (user) {
-        userName = user.name;
+        userName = user.username;
       }
     }
 

@@ -11,6 +11,8 @@ import configuration from './config/configuration';
 import { databaseConfig } from './config/database.config';
 import { Logger } from '@nestjs/common';
 import { LoanModule } from './loan/loan.module';
+import { AuthModule } from './auth/auth.module';
+import { AuthController } from './auth/auth.controller';
 
 @Module({
   imports: [
@@ -39,8 +41,12 @@ import { LoanModule } from './loan/loan.module';
     HealthModule,
     MasterStatusModule,
     UsersModule,
-    LoanModule
+    LoanModule,
+    AuthModule,
+    UsersModule
   ],
+  controllers: [AuthController], // ✅ Correct placement
+ 
   providers: [
     // {
     //   provide: APP_GUARD,

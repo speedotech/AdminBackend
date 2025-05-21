@@ -2,14 +2,23 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  HttpException,
 } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import { InjectConnection } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
+
 @Injectable()
 export class LoanService {
-  constructor(@InjectConnection() private readonly connection: Connection) {}
+  // constructor(@InjectConnection() private readonly connection: Connection) {}
+  constructor(
+    @InjectConnection() private readonly connection: Connection,
+    private readonly httpService: HttpService,
+  ) {}
+  
 
   async getLoanByAccountOrMobile(loanAccountNo?: string, mobile?: string) {
     if (!loanAccountNo && !mobile) {
@@ -46,14 +55,18 @@ export class LoanService {
         loan.loan_total_received_amount,
         loan.loan_principle_outstanding_amount,
         loan.loan_interest_outstanding_amount,
-        loan.loan_penalty_outstanding_amount
+        loan.loan_penalty_outstanding_amount,
+        loan.loan_total_payable_amount	,
+        loan.loan_penalty_outstanding_amount,
+        
+        loan.loan_interest_outstanding_amount	,
+        loan.loan_penalty_outstanding_amount	
       FROM loan
       JOIN leads ON loan.lead_id = leads.lead_id
       JOIN lead_customer ON leads.lead_customer_profile_id = lead_customer.customer_lead_id
       WHERE ${whereClause}
       LIMIT 1;
     `;
-
     const result = await this.connection.query(query, params);
 
     if (!result.length) {
@@ -63,26 +76,24 @@ export class LoanService {
           : `Loan account not found for given mobile number`,
       );
     }
-
     const ref_id = uuidv4();
-
     return {
       ref_id,
-      loan_no: result[0].loan_no,
-      customer_name: result[0].customer_name,
-      mobile: result[0].mobile,
-      email: result[0].email,
-      emi_amount: result[0].emi_amount,
-      overdue_amount: result[0].overdue_amount,
-      bill_date: result[0].bill_date,
-      due_date: result[0].due_date,
-      loan_status: result[0].loan_status,
-      product: result[0].product,
-      total_received_amount: result[0].loan_total_received_amount,
-      principle_outstanding: result[0].loan_principle_outstanding_amount,
-      interest_outstanding: result[0].loan_interest_outstanding_amount,
-      penalty_outstanding: result[0].loan_penalty_outstanding_amount,
-      total_payable_amount: result[0].emi_amount,
+      ...result[0],
     };
   }
+
+
+async confirmBbpsPayment(payload: any): Promise<any> {
+
+  try {
+    //cutomer detail from loan nnumner or refreall number nd mobile nd - amount if wholen payment has done then chnage the status and stage of if not then minus the amount from principle amount and rest will be in due .
+  } catch (error: any) {
+    if (error.response) {
+      throw new BadRequestException(error.response.data?.message || 'Payment confirmation failed');
+    }
+    throw new BadRequestException('Payment confirmation failed due to server error');
+  }
+}
+
 }

@@ -1,7 +1,7 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, BadRequestException,UseGuards } from '@nestjs/common';
 import { LoanService } from './loan.service';
 import { FetchPayableAmountDto } from './dto/fetch-payable-amount.dto';
-
+import { ApiKeyGuard } from '../api-key.guard';  // Adjust path if needed
 @Controller('loan')
 export class LoanController {
   constructor(private readonly loanService: LoanService) {}
@@ -11,7 +11,7 @@ export class LoanController {
     const data = await this.loanService.getLoanByAccountOrMobile(body.loan_account_no, body.mobile);
 
     return {
-      ref_id: data.ref_id,               // get ref_id from service response
+      ref_id: data.ref_id,
       customer_name: data.customer_name,
       loan_account_no: data.loan_no,
       emi_amt: data.emi_amount,
@@ -22,11 +22,22 @@ export class LoanController {
       product: data.product,
       total_bill_amt: data.loan_total_payable_amount,
       principal_overdue: data.loan_principle_outstanding_amount,
-      charges_overdue: null,             // add these if you want later
+      charges_overdue: null,
       interest_overdue: data.loan_interest_outstanding_amount,
       penal_charges_overdue: data.loan_penalty_outstanding_amount,
       bounce_charges_overdue: null,
       status_code: 1,
     };
   }
+
+  @Post('bbps-payment')
+  @UseGuards(ApiKeyGuard)  
+  async confirmBbpsPaymentEndpoint(@Body() payload: any) {
+    if (!payload) {
+      throw new BadRequestException('Payload is required');
+    }
+    console.log(payload)
+    return await this.loanService.confirmBbpsPayment(payload);
+  }
 }
+

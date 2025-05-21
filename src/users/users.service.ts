@@ -1,54 +1,74 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
-import { User } from './entities/user.entity';
+// src/users/users.service.ts
+import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+
+export interface User {
+  userId: number;
+  username: string;
+  password: string; // hashed password
+  active?: boolean;  // optional active flag
+}
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
-  ) {}
+  private users: User[] = [
+    {
+      userId: 1,
+      username: 'admin',
+      password: '$2b$10$N9qo8uLOickgx2ZMRZo4i.E4Pn8Hv4Yux/0/HtS8f9V6uFJFJmFEi', // bcrypt hash of 'admin123'
+      active: true,
+    },
+    {
+      userId: 2,
+      username: 'test',
+      password: '$2b$10$zQH42j0kQyLo5I9hJroplOqoPnKkmcslLlfkIVI3jSUYfFkfZ3j3C', // bcrypt hash of 'test123'
+      active: false,
+    },
+  ];
 
-  async findOne(user_id: number): Promise<User | null> {
-    if (!user_id || isNaN(user_id)) {
-      throw new BadRequestException('Invalid user_id provided');
+  async findAll(): Promise<User[]> {
+    return this.users;
+  }
+
+  async findById(id: number): Promise<User | undefined> {
+    return this.users.find(user => user.userId === id);
+  }
+
+  async create(user: User): Promise<User> {
+    // hash password before saving
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+
+    const newUser = {
+      userId: this.users.length + 1,
+      username: user.username,
+      password: hashedPassword,
+      active: true,  // default active on create
+    };
+    this.users.push(newUser);
+    return newUser;
+  }
+
+  async findOne(userIdOrUsername: number | string): Promise<User | undefined> {
+    if (typeof userIdOrUsername === 'number') {
+      return this.users.find((user) => user.userId === userIdOrUsername);
+    } else {
+      return this.users.find((user) => user.username === userIdOrUsername);
     }
-    return this.usersRepository.findOne({
-      where: { user_id },
-      select: ['user_id', 'user_name', 'name'],
-    });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { email } });
-  }
-
-  async getUserByUserId(user_id: number) {
-    const userDetails = await this.usersRepository.findOne({
-      where: { user_id },
-      select: ['user_id', 'user_name'],
-    });
-
-    if (!userDetails) {
-      throw new NotFoundException(`User not found`);
+  async validateUser(username: string, pass: string): Promise<User | null> {
+    const user = await this.findOne(username);
+    if (!user) return null;
+    const isMatch = await bcrypt.compare(pass, user.password);
+    if (isMatch) {
+      return user;
     }
-
-    return userDetails;
+    return null;
   }
 
-  async getActiveUsers() {
-    const activeUsers = await this.usersRepository.find({
-      where: {
-        user_active: 1,
-        labels: In(['CR1', 'CR2', 'CR3', 'DS1', 'DS2']),
-      },
-      select: ['user_id', 'name'],
-    });
-    return activeUsers;
+  // ADD THIS METHOD to fix your error
+  async getActiveUsers(): Promise<User[]> {
+    return this.users.filter(user => user.active);
   }
 }
