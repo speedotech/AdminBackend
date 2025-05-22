@@ -74,11 +74,11 @@ export class LoanService {
     const response = new FetchPayableAmountResponseDto({
       ref_id: ref_id.toString(),
       customer_name: leadCustomer?.first_name + ' ' + leadCustomer?.middle_name + ' ' + leadCustomer?.sur_name,
-      loan_account_no: loan?.loan_no,
-      emi_amt: loan?.loan_total_payable_amount,
-      overdue_amt: loan?.loan_total_outstanding_amount,
-      bill_date: loan?.loan_closure_date?.toString(),
-      due_date: loan?.loan_settled_date?.toString(),
+      loan_account_no: loan?.loan_no, //*
+      emi_amt: loan?.loan_principle_payable_amount, //*
+      overdue_amt: loan?.loan_total_outstanding_amount, //* */
+      bill_date: lead?.lead_final_disbursed_date?.toString(), //*
+      // due_date: loan?.loan_settled_date?.toString(),
       loan_status: loan?.loan_status_id,
       lob: "NBFC",
       product: loan?.product_id.toString(),
