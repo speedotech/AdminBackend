@@ -9,7 +9,7 @@ import {
     @PrimaryGeneratedColumn({ unsigned: true })
     lead_id!: number;
   
-    @Column({ type: 'bigint', unsigned: true })
+    @Column({ type: 'bigint', unsigned: true , nullable: true})
     lead_customer_profile_id!: number;
   
     // add other columns as needed

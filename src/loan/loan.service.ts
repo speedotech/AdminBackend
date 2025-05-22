@@ -6,88 +6,146 @@ import {
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { InjectConnection } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
+import { InjectConnection, InjectRepository } from '@nestjs/typeorm';
+import { Connection, Or, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { ConfirmBbpsPaymentDto } from './dto/confirm-payment.dto';
+import { LeadCustomer } from './entity/lead_customer.entity';
+import { Loan } from './entity/loan.entity';
+import { Lead } from './entity/leads.entity';
+import { ErrorResponseDto, FetchPayableAmountResponseDto } from './dto/fetch-payable-amount.dto';
+import { UUID } from 'typeorm/driver/mongodb/bson.typings';
 
 
 @Injectable()
 export class LoanService {
   // constructor(@InjectConnection() private readonly connection: Connection) {}
   constructor(
-    @InjectConnection() private readonly connection: Connection,
-    private readonly httpService: HttpService,
+    @InjectRepository(LeadCustomer)
+    private leadCustomerRepository: Repository<LeadCustomer>,
+
+    @InjectRepository(Loan)
+    private loanRepository: Repository<Loan>,
+
+    @InjectRepository(Lead)
+    private leadsRepository : Repository<Lead>,
   ) {}
   
 
+
+  
   async getLoanByAccountOrMobile(loanAccountNo?: string, mobile?: string) {
     if (!loanAccountNo && !mobile) {
       throw new BadRequestException('Please provide loan account number or mobile number');
     }
 
-    const params = [];
-    const whereConditions = [];
+    const loan: Loan|null = await this.loanRepository.findOne({
+      where: [
+        { loan_no: loanAccountNo },
+      ]
+    });
 
-    if (loanAccountNo) {
-      whereConditions.push('loan.loan_no = ?');
-      params.push(loanAccountNo);
+    if (loan && loan.loan_status_id === 0) {
+      throw new BadRequestException('Loan account not found');
+    }                                    
+
+    const lead: Lead|null = await this.leadsRepository.findOne({
+      where: [
+        { lead_id: loan?.lead_id }
+      ]
+    });
+
+    let leadCustomer: LeadCustomer | null;
+    if (mobile && mobile.length < 10) {
+      leadCustomer = await this.leadCustomerRepository.findOne({
+        where: [
+          { mobile: mobile}
+        ]
+      });
+    }else {
+      leadCustomer = await this.leadCustomerRepository.findOne({
+        where: [
+          { customer_lead_id: lead?.lead_customer_profile_id }
+        ]
+      });
     }
 
-    if (mobile) {
-      whereConditions.push('lead_customer.mobile = ?');
-      params.push(mobile);
-    }
+    let ref_id = new UUID();
+    const response = new FetchPayableAmountResponseDto({
+      ref_id: ref_id.toString(),
+      customer_name: leadCustomer?.first_name + ' ' + leadCustomer?.middle_name + ' ' + leadCustomer?.sur_name,
+      loan_account_no: loan?.loan_no,
+      emi_amt: loan?.loan_total_payable_amount,
+      overdue_amt: loan?.loan_total_outstanding_amount,
+      bill_date: loan?.loan_closure_date?.toString(),
+      due_date: loan?.loan_settled_date?.toString(),
+      loan_status: loan?.loan_status_id,
+      lob: "NBFC",
+      product: loan?.product_id.toString(),
+      total_bill_amt: loan?.loan_total_payable_amount,
+      principal_overdue: loan?.loan_principle_outstanding_amount,
+      charges_overdue: 0,
+      interest_overdue: loan?.loan_interest_outstanding_amount,
+      penal_charges_overdue: loan?.loan_penalty_outstanding_amount,
+      bounce_charges_overdue: 0,
+      status_code: 1,
+    });
 
-    const whereClause = whereConditions.join(' OR ');
-
-    const query = `
-      SELECT 
-        loan.loan_no,
-        CONCAT_WS(' ', lead_customer.first_name, lead_customer.middle_name, lead_customer.sur_name) AS customer_name,
-        lead_customer.mobile,
-        lead_customer.email,
-        loan.loan_total_payable_amount AS emi_amount,
-        loan.loan_total_outstanding_amount AS overdue_amount,
-        loan.loan_closure_date AS bill_date,
-        loan.loan_settled_date AS due_date,
-        loan.loan_status_id AS loan_status,
-        loan.product_id AS product,
-        loan.loan_total_received_amount,
-        loan.loan_principle_outstanding_amount,
-        loan.loan_interest_outstanding_amount,
-        loan.loan_penalty_outstanding_amount,
-        loan.loan_total_payable_amount	,
-        loan.loan_penalty_outstanding_amount,
-        
-        loan.loan_interest_outstanding_amount	,
-        loan.loan_penalty_outstanding_amount	
-      FROM loan
-      JOIN leads ON loan.lead_id = leads.lead_id
-      JOIN lead_customer ON leads.lead_customer_profile_id = lead_customer.customer_lead_id
-      WHERE ${whereClause}
-      LIMIT 1;
-    `;
-    const result = await this.connection.query(query, params);
-
-    if (!result.length) {
-      throw new NotFoundException(
-        loanAccountNo
-          ? `Loan account not found for loan number: ${loanAccountNo}`
-          : `Loan account not found for given mobile number`,
-      );
-    }
-    const ref_id = uuidv4();
-    return {
-      ref_id,
-      ...result[0],
-    };
+    return response;
   }
 
 
-async confirmBbpsPayment(payload: any): Promise<any> {
 
+
+
+
+
+
+
+async confirmBbpsPayment(payload: ConfirmBbpsPaymentDto): Promise<any> {
   try {
-    //cutomer detail from loan nnumner or refreall number nd mobile nd - amount if wholen payment has done then chnage the status and stage of if not then minus the amount from principle amount and rest will be in due .
+    const loan: Loan | null = await this.loanRepository.findOne({
+      where: { loan_no: payload.loan_account_no },
+    });
+
+    //  Error handling is still needed, error messages should be as per BBPS documentation
+
+    const leadCustomer: LeadCustomer | null = await this.leadCustomerRepository.findOne({
+      where: { customer_lead_id: loan?.lead_id },
+    });
+
+    if (loan && leadCustomer) {
+      /*
+      we need to perform operations inside this block
+      1. Check if the payment is already confirmed
+      2. If not, confirm the payment
+      3. Update the loan status and other details
+      4. if user paid less than the total amount, update the the amount by substracting the amount received from total amount
+      Return the response
+      */
+      let amountPaid = payload.txn_amt;
+      let totalAmount = loan.loan_total_payable_amount;
+      let payment_date = new Date(payload.txn_date);
+      if (amountPaid < totalAmount) { 
+        let pending_amount = totalAmount - amountPaid; 
+        loan.loan_total_outstanding_amount = pending_amount
+      }
+      loan.loan_total_received_amount = amountPaid; 
+      loan.loan_status_id = 1;
+      loan.loan_settled_date = new Date(payment_date);
+      await this.loanRepository.save(loan);
+
+      return new FetchPayableAmountResponseDto({ status_code: 1 });
+
+    }else {
+      return new ErrorResponseDto({
+        status_code: 2,
+        error_code: 'AB102',
+        message: 'Invalid Loan Account Number',
+      });
+    }
+    
+    
   } catch (error: any) {
     if (error.response) {
       throw new BadRequestException(error.response.data?.message || 'Payment confirmation failed');
