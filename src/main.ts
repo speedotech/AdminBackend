@@ -17,7 +17,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Set global prefix for all routes
-  // app.setGlobalPrefix('api');
+  app.setGlobalPrefix('v1');
 
   // Add request logging middleware
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -64,13 +64,17 @@ async function bootstrap() {
   (server._router.stack as any[]).forEach((middleware: any) => {
     if (middleware.route) {
       // routes registered directly on the app
-      logger.log(`${middleware.route.path} [${Object.keys(middleware.route.methods).join(', ')}]`);
+      logger.log(
+        `${middleware.route.path} [${Object.keys(middleware.route.methods).join(', ')}]`,
+      );
     } else if (middleware.name === 'router') {
       // router middleware
       middleware.handle.stack.forEach((handler: any) => {
         const route = handler.route;
         if (route) {
-          logger.log(`${route.path} [${Object.keys(route.methods).join(', ')}]`);
+          logger.log(
+            `${route.path} [${Object.keys(route.methods).join(', ')}]`,
+          );
         }
       });
     }

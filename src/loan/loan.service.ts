@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
@@ -53,8 +50,7 @@ export class LoanService {
       this.configService.get<string>('ENTITY_ID') ||
       '0d761b84-96ce-46de-9533-ba51b2d5a856';
 
-    this.programId =
-      this.configService.get<string>('PROGRAM_ID') || '42';
+    this.programId = this.configService.get<string>('PROGRAM_ID') || '42';
   }
 
   private async checkRefIdExists(ref_id: string): Promise<boolean> {
@@ -145,9 +141,7 @@ export class LoanService {
     });
   }
 
-  async confirmBbpsPayment(
-    payload: ConfirmBbpsPaymentDto,
-  ): Promise<any> {
+  async confirmBbpsPayment(payload: ConfirmBbpsPaymentDto): Promise<any> {
     if (!payload.loan_account_no) {
       return new ErrorResponseDto({
         status_code: 2,
