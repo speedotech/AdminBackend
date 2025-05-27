@@ -1,98 +1,273 @@
-import {
+ import {
   Injectable,
   NotFoundException,
   BadRequestException,
   HttpException,
 } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
-import { InjectConnection } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
+import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-
+import { ConfirmBbpsPaymentDto } from './dto/confirm-payment.dto';
+import { LeadCustomer } from './entity/lead_customer.entity';
+import { Loan } from './entity/loan.entity';
+import { Lead } from './entity/leads.entity';
+import { Analysis } from './entity/redit_analysis_memo';
+import { Collection } from './entity/collection.entity';
+import { ApiBbps } from './entity/api-bbps.entity';
+import {
+  ErrorResponseDto,
+  FetchPayableAmountResponseDto,
+} from './dto/fetch-payable-amount.dto';
 
 @Injectable()
 export class LoanService {
-  // constructor(@InjectConnection() private readonly connection: Connection) {}
   constructor(
-    @InjectConnection() private readonly connection: Connection,
-    private readonly httpService: HttpService,
+    @InjectRepository(LeadCustomer)
+    private leadCustomerRepository: Repository<LeadCustomer>,
+
+    @InjectRepository(Loan)
+    private loanRepository: Repository<Loan>,
+
+    @InjectRepository(Lead)
+    private leadsRepository: Repository<Lead>,
+
+    @InjectRepository(Analysis)
+    private analysisRepository: Repository<Analysis>,
+
+    @InjectRepository(Collection)
+    private collectionRepository: Repository<Collection>,
+
+    @InjectRepository(ApiBbps)
+    private readonly apiBbpsRepository: Repository<ApiBbps>,
+
+    
   ) {}
-  
+
+  // Helper to check if ref_id exists in DB
+  async checkRefIdExists(ref_id: string): Promise<boolean> {
+    const count = await this.apiBbpsRepository.count({ where: { ref_id } });
+    return count > 0;
+  }
+
+  // Helper to create api-bbps record
+  async createApiBbpsRecord(data: Partial<ApiBbps>): Promise<ApiBbps> {
+    const record = this.apiBbpsRepository.create(data);
+    return await this.apiBbpsRepository.save(record);
+  }
 
   async getLoanByAccountOrMobile(loanAccountNo?: string, mobile?: string) {
     if (!loanAccountNo && !mobile) {
-      throw new BadRequestException('Please provide loan account number or mobile number');
-    }
-
-    const params = [];
-    const whereConditions = [];
-
-    if (loanAccountNo) {
-      whereConditions.push('loan.loan_no = ?');
-      params.push(loanAccountNo);
-    }
-
-    if (mobile) {
-      whereConditions.push('lead_customer.mobile = ?');
-      params.push(mobile);
-    }
-
-    const whereClause = whereConditions.join(' OR ');
-
-    const query = `
-      SELECT 
-        loan.loan_no,
-        CONCAT_WS(' ', lead_customer.first_name, lead_customer.middle_name, lead_customer.sur_name) AS customer_name,
-        lead_customer.mobile,
-        lead_customer.email,
-        loan.loan_total_payable_amount AS emi_amount,
-        loan.loan_total_outstanding_amount AS overdue_amount,
-        loan.loan_closure_date AS bill_date,
-        loan.loan_settled_date AS due_date,
-        loan.loan_status_id AS loan_status,
-        loan.product_id AS product,
-        loan.loan_total_received_amount,
-        loan.loan_principle_outstanding_amount,
-        loan.loan_interest_outstanding_amount,
-        loan.loan_penalty_outstanding_amount,
-        loan.loan_total_payable_amount	,
-        loan.loan_penalty_outstanding_amount,
-        
-        loan.loan_interest_outstanding_amount	,
-        loan.loan_penalty_outstanding_amount	
-      FROM loan
-      JOIN leads ON loan.lead_id = leads.lead_id
-      JOIN lead_customer ON leads.lead_customer_profile_id = lead_customer.customer_lead_id
-      WHERE ${whereClause}
-      LIMIT 1;
-    `;
-    const result = await this.connection.query(query, params);
-
-    if (!result.length) {
-      throw new NotFoundException(
-        loanAccountNo
-          ? `Loan account not found for loan number: ${loanAccountNo}`
-          : `Loan account not found for given mobile number`,
+      throw new BadRequestException(
+        'Please provide loan account number or mobile number',
       );
     }
-    const ref_id = uuidv4();
-    return {
+
+    const loan: Loan | null = await this.loanRepository.findOne({
+      where: [{ loan_no: loanAccountNo }],
+    });
+
+    if (loan && loan.loan_status_id === 0) {
+      throw new BadRequestException('Loan account not found');
+    }
+
+    const lead: Lead | null = await this.leadsRepository.findOne({
+      where: [{ lead_id: loan?.lead_id }],
+    });
+
+    let leadCustomer: LeadCustomer | null;
+    if (mobile && mobile.length < 10) {
+      leadCustomer = await this.leadCustomerRepository.findOne({
+        where: [{ mobile: mobile }],
+      });
+    } else {
+      leadCustomer = await this.leadCustomerRepository.findOne({
+        where: [{ customer_lead_id: lead?.lead_id }],
+      });
+    }
+
+    // Generate ref_id and ensure uniqueness
+    let ref_id = uuidv4();
+    let isDuplicate = await this.checkRefIdExists(ref_id);
+    while (isDuplicate) {
+      ref_id = uuidv4();
+      isDuplicate = await this.checkRefIdExists(ref_id);
+    }
+
+    const customerName = [
+      leadCustomer?.first_name,
+      leadCustomer?.middle_name,
+      leadCustomer?.sur_name,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    // Save BBPS record
+    await this.createApiBbpsRecord({
       ref_id,
-      ...result[0],
-    };
+      loan_account_no: loan?.loan_no ?? undefined,
+      customer_name: customerName ?? undefined,
+      entity_id: '0d761b84-96ce-46de-9533-ba51b2d5a856',
+      program_id: '42',
+      status: 0,
+    });
+
+    const response = new FetchPayableAmountResponseDto({
+      ref_id: ref_id,
+      customer_name: customerName,
+      loan_account_no: loan?.loan_no,
+      emi_amt: loan?.loan_principle_payable_amount,
+      overdue_amt: loan?.loan_total_outstanding_amount,
+      bill_date: lead?.lead_final_disbursed_date?.toString(),
+      status: lead?.status,
+      lob: 'NBFC',
+      product: loan?.product_id?.toString(),
+      total_bill_amt: loan?.loan_total_payable_amount,
+      principal_overdue: 0,
+      charges_overdue: 0,
+      interest_overdue: loan?.loan_penalty_payable_amount,
+      penal_charges_overdue: 0,
+      bounce_charges_overdue: 0,
+      status_code: 1,
+    });
+
+    return response;
   }
 
-
-async confirmBbpsPayment(payload: any): Promise<any> {
-
+ async confirmBbpsPayment(payload: ConfirmBbpsPaymentDto): Promise<any> {
   try {
-    //cutomer detail from loan nnumner or refreall number nd mobile nd - amount if wholen payment has done then chnage the status and stage of if not then minus the amount from principle amount and rest will be in due .
+    // Ensure loan_account_no and ref_id are present
+    if (!payload.loan_account_no) {
+      return new ErrorResponseDto({
+        status_code: 2,
+        error_code: 'AB101',
+        message: 'Loan Account Number is required',
+      });
+    }
+
+    if (!payload.ref_id) {
+      return new ErrorResponseDto({
+        status_code: 2,
+        error_code: 'AB104',
+        message: 'ref_id is required',
+      });
+    }
+
+    // Check if ref_id already exists (duplicate payment attempt)
+    const exists = await this.checkRefIdExists(payload.ref_id);
+    if (!exists) {
+      // ref_id must have been generated by first API - if not found, error
+      return new ErrorResponseDto({
+        status_code: 409,
+        message: `ref_id: ${payload.ref_id} does not exist, please first call fetch-payable-amount API.`,
+      });
+    }
+
+    // Check if payment is already done for this ref_id (you might want to check status or existing payment)
+    const paymentRecord = await this.apiBbpsRepository.findOne({
+      where: { ref_id: payload.ref_id },
+    });
+
+    if (!paymentRecord) {
+      return new ErrorResponseDto({
+        status_code: 409,
+        message: `No payment record found for ref_id: ${payload.ref_id}`,
+      });
+    }
+
+    if (paymentRecord.status === 1) {
+      return {
+        status_code: 409,
+        message: `Duplicate payment attempt for ref_id: ${payload.ref_id}`,
+      };
+    }
+
+    const loan: Loan | null = await this.loanRepository.findOne({
+      where: { loan_no: payload.loan_account_no },
+    });
+
+    if (!loan) {
+      return new ErrorResponseDto({
+        status_code: 2,
+        error_code: 'AB102',
+        message: 'Invalid Loan Account Number',
+      });
+    }
+
+    const leadCustomer: LeadCustomer | null =
+      await this.leadCustomerRepository.findOne({
+        where: { customer_lead_id: loan.lead_id },
+      });
+
+    if (!leadCustomer) {
+      return new ErrorResponseDto({
+        status_code: 3,
+        error_code: 'AB103',
+        message: 'Lead Customer Not Found',
+      });
+    }
+
+    let amountPaid = payload.txn_amt;
+    let totalAmount = loan.loan_total_payable_amount;
+    let payment_date = new Date(payload.txn_date);
+
+    // Update loan amounts
+    if (amountPaid < totalAmount) {
+      loan.loan_total_outstanding_amount = totalAmount - amountPaid;
+    } else {
+      loan.loan_total_outstanding_amount = 0;
+    }
+
+    loan.loan_total_received_amount =
+      (loan.loan_total_received_amount || 0) + amountPaid;
+    loan.loan_status_id = 1;
+    loan.loan_settled_date = payment_date;
+
+    await this.loanRepository.save(loan);
+
+    // Update lead status
+    const lead = await this.leadsRepository.findOne({
+      where: { lead_id: loan.lead_id },
+    });
+
+    if (lead) {
+      if (amountPaid >= totalAmount) {
+        lead.lead_status_id = 16;
+        lead.stage = 'S16';
+        lead.status = 'CLOSED';
+      } else {
+        lead.lead_status_id = 19;
+        lead.stage = 'S16';
+        lead.status = 'PART-PAYMENT';
+      }
+      await this.leadsRepository.save(lead);
+    }
+
+    // Update existing BBPS record for this ref_id with payment info and status=1
+    paymentRecord.token = payload.token ?? undefined;
+    paymentRecord.bbps_source = payload.bbps_source ?? undefined;
+    paymentRecord.biller_id = payload.biller_id ?? undefined;
+    paymentRecord.txn_ref_no = payload.txn_ref_no ?? undefined;
+    paymentRecord.txn_date = new Date(payload.txn_date);
+    paymentRecord.txn_amt = payload.txn_amt;
+    paymentRecord.payment_channel = payload.payment_channel ?? undefined;
+    paymentRecord.payment_mode = payload.payment_mode ?? undefined;
+    paymentRecord.npciref = payload.npciref ?? undefined;
+    paymentRecord.couref = payload.couref ?? undefined;
+    paymentRecord.status = 1; // Mark as payment done
+
+    await this.apiBbpsRepository.save(paymentRecord);
+
+    return new FetchPayableAmountResponseDto({ status_code: 1 });
   } catch (error: any) {
     if (error.response) {
-      throw new BadRequestException(error.response.data?.message || 'Payment confirmation failed');
+      throw new BadRequestException(
+        error.response.data?.message || 'Payment confirmation failed',
+      );
     }
-    throw new BadRequestException('Payment confirmation failed due to server error');
+    throw new BadRequestException(
+      'Payment confirmation failed due to server error',
+    );
   }
 }
 

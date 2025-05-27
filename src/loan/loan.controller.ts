@@ -1,14 +1,23 @@
-import { Body, Controller, Post, BadRequestException,UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  BadRequestException,
+  UseGuards,
+} from '@nestjs/common';
 import { LoanService } from './loan.service';
 import { FetchPayableAmountDto } from './dto/fetch-payable-amount.dto';
-import { ApiKeyGuard } from '../api-key.guard';  // Adjust path if needed
+import { ApiKeyGuard } from '../api-key.guard'; // Adjust path if needed
 @Controller('loan')
 export class LoanController {
   constructor(private readonly loanService: LoanService) {}
 
   @Post('fetch-payable-amount')
   async fetchPayableAmount(@Body() body: FetchPayableAmountDto) {
-    const data = await this.loanService.getLoanByAccountOrMobile(body.loan_account_no, body.mobile);
+    const data = await this.loanService.getLoanByAccountOrMobile(
+      body.loan_account_no,
+      body.mobile,
+    );
 
     return {
       ref_id: data.ref_id,
@@ -31,13 +40,12 @@ export class LoanController {
   }
 
   @Post('bbps-payment')
-  @UseGuards(ApiKeyGuard)  
+  @UseGuards(ApiKeyGuard)
   async confirmBbpsPaymentEndpoint(@Body() payload: any) {
     if (!payload) {
       throw new BadRequestException('Payload is required');
     }
-    console.log(payload)
+    console.log(payload);
     return await this.loanService.confirmBbpsPayment(payload);
   }
 }
-

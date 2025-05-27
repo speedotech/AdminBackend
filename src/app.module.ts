@@ -13,6 +13,7 @@ import { Logger } from '@nestjs/common';
 import { LoanModule } from './loan/loan.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthController } from './auth/auth.controller';
+import * as crypto from 'crypto';
 
 @Module({
   imports: [
@@ -43,10 +44,10 @@ import { AuthController } from './auth/auth.controller';
     UsersModule,
     LoanModule,
     AuthModule,
-    UsersModule
+    UsersModule,
   ],
   controllers: [AuthController], // ✅ Correct placement
- 
+
   providers: [
     // {
     //   provide: APP_GUARD,

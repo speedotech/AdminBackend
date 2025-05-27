@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import helmet from 'helmet';
 import * as compression from 'compression';
+import crypto from 'crypto';
+
 import { ConfigService } from '@nestjs/config';
 import { Request, Response, NextFunction } from 'express';
 import * as dotenv from 'dotenv';
@@ -64,18 +66,24 @@ async function bootstrap() {
   (server._router.stack as any[]).forEach((middleware: any) => {
     if (middleware.route) {
       // routes registered directly on the app
-      logger.log(`${middleware.route.path} [${Object.keys(middleware.route.methods).join(', ')}]`);
+      logger.log(
+        `${middleware.route.path} [${Object.keys(middleware.route.methods).join(', ')}]`,
+      );
     } else if (middleware.name === 'router') {
       // router middleware
       middleware.handle.stack.forEach((handler: any) => {
         const route = handler.route;
         if (route) {
-          logger.log(`${route.path} [${Object.keys(route.methods).join(', ')}]`);
+          logger.log(
+            `${route.path} [${Object.keys(route.methods).join(', ')}]`,
+          );
         }
       });
     }
   });
-
+  if (!(global as any).crypto) {
+    (global as any).crypto = crypto;
+  }
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
   logger.log(`Application is running on: http://localhost:${port}/api`);
