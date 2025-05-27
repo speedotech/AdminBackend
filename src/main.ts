@@ -17,7 +17,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Set global prefix for all routes
-  app.setGlobalPrefix('api');
+  // app.setGlobalPrefix('api');
 
   // Add request logging middleware
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -78,6 +78,6 @@ async function bootstrap() {
 
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
-  logger.log(`Application is running on: http://localhost:${port}/api`);
+  logger.log(`Application is running on: http://localhost:${port}/`);
 }
 bootstrap();

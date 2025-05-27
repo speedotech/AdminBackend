@@ -3,59 +3,50 @@
 //     PrimaryGeneratedColumn,
 //     Column,
 //   } from 'typeorm';
-  
+
 //   @Entity('loan')
 //   export class Loan {
 //     @PrimaryGeneratedColumn({ unsigned: true })
 //     loan_id!: number;
-  
+
 //     @Column({ length: 50, unique: true })
 //     loan_no!: string;
-  
+
 //     @Column({ type: 'bigint', unsigned: true })
 //     lead_id!: number;
-  
+
 //     @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
 //     loan_total_payable_amount!: number;
-  
+
 //     @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
 //     loan_total_outstanding_amount!: number;
-  
+
 //     @Column({ type: 'datetime', nullable: true })
 //     loan_closure_date?: Date;
-  
+
 //     @Column({ type: 'datetime', nullable: true })
 //     loan_settled_date?: Date;
-  
+
 //     @Column({ type: 'int', unsigned: true, nullable: true })
 //     loan_status_id!: number;
-  
+
 //     @Column({ type: 'int', unsigned: true, nullable: true })
 //     product_id!: number;
-  
+
 //     @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
 //     loan_total_received_amount!: number;
-  
+
 //     @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
 //     loan_principle_outstanding_amount!: number;
-  
+
 //     @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
 //     loan_interest_outstanding_amount!: number;
-  
+
 //     @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
 //     loan_penalty_outstanding_amount!: number;
 //   }
 
-
-
-
-
-
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('loan')
 export class Loan {
@@ -155,7 +146,12 @@ export class Loan {
   @Column({ type: 'mediumint', unsigned: true, nullable: true })
   loan_disbursement_bank_id?: number;
 
-  @Column({ type: 'int', unsigned: true, nullable: true, comment: 'disbursement trans api status' })
+  @Column({
+    type: 'int',
+    unsigned: true,
+    nullable: true,
+    comment: 'disbursement trans api status',
+  })
   loan_disbursement_trans_status_id?: number;
 
   @Column({ type: 'datetime', nullable: true })
@@ -164,10 +160,20 @@ export class Loan {
   @Column({ type: 'bigint', unsigned: true, nullable: true })
   loan_disbursement_trans_log_id?: number;
 
-  @Column({ type: 'tinyint', unsigned: true, nullable: true, comment: '1=>Online,2=>Offline' })
+  @Column({
+    type: 'tinyint',
+    unsigned: true,
+    nullable: true,
+    comment: '1=>Online,2=>Offline',
+  })
   loan_disbursement_payment_mode_id?: number;
 
-  @Column({ type: 'tinyint', unsigned: true, nullable: true, comment: '1=>IMPS,2=>NEFT' })
+  @Column({
+    type: 'tinyint',
+    unsigned: true,
+    nullable: true,
+    comment: '1=>IMPS,2=>NEFT',
+  })
   loan_disbursement_payment_type_id?: number;
 
   @Column({ type: 'int', unsigned: true, nullable: true })
@@ -185,10 +191,20 @@ export class Loan {
   @Column({ type: 'int', unsigned: true, nullable: true })
   loan_noc_letter_sent_user_id?: number;
 
-  @Column({ type: 'tinyint', unsigned: true, nullable: true, comment: '1 => Collection Pending, 2 => Recovery Pending, 3 => Legal' })
+  @Column({
+    type: 'tinyint',
+    unsigned: true,
+    nullable: true,
+    comment: '1 => Collection Pending, 2 => Recovery Pending, 3 => Legal',
+  })
   loan_recovery_status_id?: number;
 
-  @Column({ type: 'tinyint', unsigned: true, default: 0, comment: '1=>active Loan;2=>Loan Closed' })
+  @Column({
+    type: 'tinyint',
+    unsigned: true,
+    default: 0,
+    comment: '1=>active Loan;2=>Loan Closed',
+  })
   loan_bureau_report_flag!: number;
 
   @Column({ type: 'datetime', nullable: true })
@@ -287,5 +303,3 @@ export class Loan {
   @Column({ type: 'tinyint', nullable: true })
   loan_mmp_event_push_flag?: number;
 }
-
-  

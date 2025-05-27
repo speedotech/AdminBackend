@@ -110,7 +110,6 @@ export class Lead {
 
   @Column({ unsigned: true, nullable: true })
   lead_status_id?: number;
-
   @Column({ length: 500, nullable: true })
   remark?: string;
 

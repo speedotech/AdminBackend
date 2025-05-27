@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsString, IsNumber, IsOptional, IsInt, Length } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsInt,
+  Length,
+  IsOptional,
+  isNotEmpty,
+} from 'class-validator';
 
 export class ConfirmBbpsPaymentDto {
   @IsNotEmpty()
@@ -6,7 +14,7 @@ export class ConfirmBbpsPaymentDto {
   entityId!: string;
 
   @IsNotEmpty()
-  @IsString()   // You said programId is string content, not number
+  @IsString() // You said programId is string content, not number
   programId!: string;
 
   @IsNotEmpty()
@@ -63,10 +71,16 @@ export class ConfirmBbpsPaymentDto {
   @IsInt()
   status!: number;
 
+  @IsNotEmpty()
+  @IsString()
+  npciref?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  couref?: string;
 }
 
-
-export class FetchPayableAmountResponseDto { 
+export class FetchPayableAmountResponseDto {
   @IsNotEmpty()
   @IsNumber()
   status_code!: number;

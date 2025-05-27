@@ -6,7 +6,7 @@ export interface User {
   userId: number;
   username: string;
   password: string; // hashed password
-  active?: boolean;  // optional active flag
+  active?: boolean; // optional active flag
 }
 
 @Injectable()
@@ -31,7 +31,7 @@ export class UsersService {
   }
 
   async findById(id: number): Promise<User | undefined> {
-    return this.users.find(user => user.userId === id);
+    return this.users.find((user) => user.userId === id);
   }
 
   async create(user: User): Promise<User> {
@@ -43,7 +43,7 @@ export class UsersService {
       userId: this.users.length + 1,
       username: user.username,
       password: hashedPassword,
-      active: true,  // default active on create
+      active: true, // default active on create
     };
     this.users.push(newUser);
     return newUser;
@@ -69,6 +69,6 @@ export class UsersService {
 
   // ADD THIS METHOD to fix your error
   async getActiveUsers(): Promise<User[]> {
-    return this.users.filter(user => user.active);
+    return this.users.filter((user) => user.active);
   }
 }

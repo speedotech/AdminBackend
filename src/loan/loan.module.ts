@@ -10,12 +10,22 @@ import { LoanController } from './loan.controller';
 import { Loan } from './entity/loan.entity';
 import { Lead } from './entity/leads.entity';
 import { LeadCustomer } from './entity/lead_customer.entity';
+import { Analysis } from './entity/redit_analysis_memo';
+import { Collection } from './entity/collection.entity';
+import { ApiBbps } from './entity/api-bbps.entity';
 
 @Module({
   imports: [
     HttpModule,
     ConfigModule,
-    TypeOrmModule.forFeature([Loan, Lead, LeadCustomer]), // <-- add this line
+    TypeOrmModule.forFeature([
+      Loan,
+      Lead,
+      LeadCustomer,
+      Analysis,
+      Collection,
+      ApiBbps,
+    ]), // <-- add this line
   ],
   providers: [LoanService],
   controllers: [LoanController],

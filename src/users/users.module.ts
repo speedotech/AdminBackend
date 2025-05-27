@@ -7,8 +7,8 @@ import { UsersController } from './users.controller';
 @Module({
   imports: [
     JwtModule.register({
-      secret: 'your_jwt_secret_key_here',  // replace with a strong secret, or load from env variables
-      signOptions: { expiresIn: '1h' },    // token expires in 1 hour
+      secret: 'your_jwt_secret_key_here', // replace with a strong secret, or load from env variables
+      signOptions: { expiresIn: '1h' }, // token expires in 1 hour
     }),
   ],
   providers: [UsersService],

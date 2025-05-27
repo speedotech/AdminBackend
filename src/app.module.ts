@@ -43,10 +43,10 @@ import { AuthController } from './auth/auth.controller';
     UsersModule,
     LoanModule,
     AuthModule,
-    UsersModule
+    UsersModule,
   ],
   controllers: [AuthController], // ✅ Correct placement
- 
+
   providers: [
     // {
     //   provide: APP_GUARD,

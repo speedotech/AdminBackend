@@ -1,5 +1,12 @@
 // src/users/users.controller.ts
-import { Controller, Get, Post, Body, Param, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService, User } from './users.service';
 import { JwtService } from '@nestjs/jwt';
 
@@ -28,7 +35,10 @@ export class UsersController {
   // Login endpoint
   @Post('login')
   async login(@Body() body: { username: string; password: string }) {
-    const user = await this.usersService.validateUser(body.username, body.password);
+    const user = await this.usersService.validateUser(
+      body.username,
+      body.password,
+    );
     if (!user) {
       throw new UnauthorizedException('Invalid username or password');
     }

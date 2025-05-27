@@ -1,5 +1,12 @@
-import { IsNotEmpty, IsString, IsOptional, Length, IsInt, IsNumber, isInt } from 'class-validator';
-
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  Length,
+  IsInt,
+  IsNumber,
+  isInt,
+} from 'class-validator';
 
 export class FetchPayableAmountDto {
   @IsNotEmpty()
@@ -7,7 +14,7 @@ export class FetchPayableAmountDto {
   entityId!: string;
 
   @IsNotEmpty()
-  @IsString()   // You said programId is string content, not number
+  @IsString() // You said programId is string content, not number
   programId!: string;
 
   @IsNotEmpty()
@@ -28,9 +35,9 @@ export class FetchPayableAmountDto {
   @Length(1, 50)
   loan_account_no!: string;
 
-  @IsNotEmpty()
-  @IsString()
-  ref_id!: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // ref_id!: string;
 
   @IsOptional()
   @IsString()
@@ -38,15 +45,14 @@ export class FetchPayableAmountDto {
   mobile?: string;
 }
 
-
-
-
-
-
 export class FetchPayableAmountResponseDto {
   @IsNotEmpty()
   @IsString()
   ref_id!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  status!: string;
 
   @IsNotEmpty()
   @IsString()
@@ -112,13 +118,10 @@ export class FetchPayableAmountResponseDto {
   @IsInt()
   status_code?: number;
 
-
   constructor(init?: Partial<FetchPayableAmountResponseDto>) {
     Object.assign(this, init);
   }
 }
-
-
 
 export class ErrorResponseDto {
   @IsInt()
@@ -131,10 +134,7 @@ export class ErrorResponseDto {
   @IsString()
   message!: string;
 
-
   constructor(init?: Partial<ErrorResponseDto>) {
     Object.assign(this, init);
   }
-
-
 }
