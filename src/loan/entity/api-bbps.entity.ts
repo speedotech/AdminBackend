@@ -3,7 +3,11 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Loan } from './loan.entity';
+import { Lead } from './leads.entity';
 
 @Entity('api_bbps')
 export class ApiBbps {
@@ -63,4 +67,14 @@ export class ApiBbps {
 
   @Column({ nullable: true })
   couref?: string;
+
+  // 👉 Relation to Loan
+  // @ManyToOne(() => Loan, (loan) => loan.bbps, { nullable: true })
+  // @JoinColumn({ name: 'loan_account_no', referencedColumnName: 'loan_account_no' })
+  // loan?: Loan;
+
+  // 👉 Optional: Relation to Lead
+// @ManyToOne(() => Lead, (lead) => lead.bbps, { nullable: true })
+//   @JoinColumn({ name: 'ref_id', referencedColumnName: 'ref_id' })
+//   lead?: Lead;
 }

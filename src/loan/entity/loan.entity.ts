@@ -303,3 +303,7 @@ export class Loan {
   @Column({ type: 'tinyint', nullable: true })
   loan_mmp_event_push_flag?: number;
 }
+
+
+
+

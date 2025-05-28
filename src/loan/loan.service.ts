@@ -210,8 +210,10 @@ export class LoanService {
       (loan.loan_total_received_amount || 0) + amountPaid;
     loan.loan_status_id = 1;
     loan.loan_settled_date = paymentDate;
+console.log('Saving loan:', loan);
 
     await this.loanRepository.save(loan);
+console.log('Loan saved successfully');
 
     const lead = await this.leadsRepository.findOne({
       where: { lead_id: loan.lead_id },
