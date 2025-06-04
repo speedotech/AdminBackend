@@ -22,5 +22,5 @@ export default () => ({
     level: process.env.LOG_LEVEL || 'debug',
   },
   nodeEnv: process.env.NODE_ENV || 'development',
-  apiBaseUrl: process.env.API_BASE_URL || 'https://api.agrimuat.com/',
+  apiBaseUrl: process.env.API_BASE_URL || 'https://node.agrimuat.com/',
 });

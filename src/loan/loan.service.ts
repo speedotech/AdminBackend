@@ -44,7 +44,7 @@ export class LoanService {
   ) {
     this.apiBaseUrl =
       this.configService.get<string>('API_BASE_URL') ||
-      'https://api.agrimuat.com/index.php';
+      'https://node.agrimuat.com/';
 
     this.entityId =
       this.configService.get<string>('ENTITY_ID') ||
@@ -54,9 +54,7 @@ export class LoanService {
   }
 
   private async checkRefIdExists(ref_id: string): Promise<boolean> {
-    const count = await this.apiBbpsRepository.count({
-      where: { ref_id },
-    });
+    const count = await this.apiBbpsRepository.count({ where: { ref_id } });
     return count > 0;
   }
 
@@ -132,12 +130,16 @@ export class LoanService {
       lob: 'NBFC',
       product: loan.product_id?.toString(),
       total_bill_amt: loan.loan_total_payable_amount,
-      principal_overdue: 0,
-      charges_overdue: 0,
+      loan_interest_payable_amount: loan.loan_interest_payable_amount,
+      // charges_overdue: 0,
       interest_overdue: loan.loan_penalty_payable_amount,
-      penal_charges_overdue: 0,
-      bounce_charges_overdue: 0,
+      // penal_charges_overdue: 0,
+      // bounce_charges_overdue: 0,
       status_code: 1,
+      // total_payable_amount: loan.loan_total_payable_amount,
+      // amount_paid: loan.loan_total_received_amount ?? 0,
+      outstanding_amount: loan.loan_total_outstanding_amount,
+      current_status: loan.status ?? lead?.status ?? 'PENDING',
     });
   }
 
@@ -204,16 +206,15 @@ export class LoanService {
     const totalAmount = loan.loan_total_payable_amount;
     const paymentDate = new Date(payload.txn_date);
 
+    // Update loan details
     loan.loan_total_outstanding_amount =
       amountPaid < totalAmount ? totalAmount - amountPaid : 0;
     loan.loan_total_received_amount =
       (loan.loan_total_received_amount || 0) + amountPaid;
     loan.loan_status_id = 1;
     loan.loan_settled_date = paymentDate;
-console.log('Saving loan:', loan);
 
     await this.loanRepository.save(loan);
-console.log('Loan saved successfully');
 
     const lead = await this.leadsRepository.findOne({
       where: { lead_id: loan.lead_id },
@@ -245,7 +246,40 @@ console.log('Loan saved successfully');
     paymentRecord.status = 1; // Payment done
 
     await this.apiBbpsRepository.save(paymentRecord);
-
     return new FetchPayableAmountResponseDto({ status_code: 1 });
+
+    // Fetch analysis for repayment date if any
+    // const analysis = await this.analysisRepository.findOne({
+    //   where: { lead_id: loan.lead_id },
+    // });
+
+    // return new FetchPayableAmountResponseDto({
+    //   ref_id: payload.ref_id,
+    //   customer_name: [
+    //     leadCustomer.first_name,
+    //     leadCustomer.middle_name,
+    //     leadCustomer.sur_name,
+    //   ]
+    //     .filter(Boolean)
+    //     .join(' '),
+    //   loan_account_no: loan.loan_no,
+    //   emi_amt: loan.loan_principle_payable_amount,
+    //   overdue_amt: loan.loan_total_outstanding_amount,
+    //   bill_date: lead?.lead_final_disbursed_date?.toString(),
+    //   status: 'PAID',
+    //   lob: 'NBFC',
+    //   product: loan.product_id?.toString(),
+    //   total_bill_amt: loan.loan_total_payable_amount,
+    //   principal_overdue: 0,
+    //   charges_overdue: 0,
+    //   interest_overdue: loan.loan_penalty_payable_amount ?? 0,
+    //   penal_charges_overdue: 0,
+    //   bounce_charges_overdue: 0,
+    //   status_code: 1,
+    //   total_payable_amount: loan.loan_total_payable_amount,
+    //   amount_paid: amountPaid,
+    //   outstanding_amount: 0,
+    //   // current_status: 'PAID',
+    // });
   }
 }

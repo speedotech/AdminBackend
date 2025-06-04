@@ -1,18 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
 import { LeadsModule } from './leads/leads.module';
 import { HealthModule } from './health/health.module';
 import { MasterStatusModule } from './master-status/master-status.module';
 import { UsersModule } from './users/users.module';
 import configuration from './config/configuration';
 import { databaseConfig } from './config/database.config';
-import { Logger } from '@nestjs/common';
 import { LoanModule } from './loan/loan.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthController } from './auth/auth.controller';
+import { HomeModule } from './home/home.module';
 
 @Module({
   imports: [
@@ -44,6 +42,7 @@ import { AuthController } from './auth/auth.controller';
     LoanModule,
     AuthModule,
     UsersModule,
+    HomeModule,
   ],
   controllers: [AuthController], // ✅ Correct placement
 
@@ -55,7 +54,5 @@ import { AuthController } from './auth/auth.controller';
   ],
 })
 export class AppModule {
-  constructor(private configService: ConfigService) {
-    const logger = new Logger('AppModule');
-  }
+  constructor(private configService: ConfigService) {}
 }

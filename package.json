@@ -4,7 +4,7 @@
   "description": "NestJS version of Speedoloan backend",
   "main": "dist/main.js",
   "scripts": {
-    "start": "nest start",
+    "start":"nest start > app.log 2>&1",
     "start:dev": "nest start --watch",
     "build": "npm run format && nest build && npm run copy-env",
     "copy-env": "cp .env.production dist/.env && cp .env.production .env",

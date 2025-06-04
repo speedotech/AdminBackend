@@ -5,7 +5,6 @@ import {
   Length,
   IsInt,
   IsNumber,
-  isInt,
 } from 'class-validator';
 
 export class FetchPayableAmountDto {
@@ -14,12 +13,16 @@ export class FetchPayableAmountDto {
   entityId!: string;
 
   @IsNotEmpty()
-  @IsString() // You said programId is string content, not number
+  @IsString()
   programId!: string;
 
   @IsNotEmpty()
   @IsString()
   token!: string;
+
+  // @IsNotEmpty()
+  // @IsString()
+  // api_key! :string;
 
   @IsNotEmpty()
   @IsString()
@@ -34,10 +37,6 @@ export class FetchPayableAmountDto {
   @IsString()
   @Length(1, 50)
   loan_account_no!: string;
-
-  // @IsNotEmpty()
-  // @IsString()
-  // ref_id!: string;
 
   @IsOptional()
   @IsString()
@@ -63,11 +62,11 @@ export class FetchPayableAmountResponseDto {
   loan_account_no!: string;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsNumber({}, { message: 'emi_amt must be a number' })
   emi_amt!: number;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsNumber({}, { message: 'overdue_amt must be a number' })
   overdue_amt!: number;
 
   @IsNotEmpty()
@@ -91,32 +90,53 @@ export class FetchPayableAmountResponseDto {
   product!: string;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsNumber({}, { message: 'total_bill_amt must be a number' })
   total_bill_amt!: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'principal_overdue must be a number' })
   principal_overdue?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'charges_overdue must be a number' })
   charges_overdue?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'interest_overdue must be a number' })
   interest_overdue?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'penal_charges_overdue must be a number' })
   penal_charges_overdue?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'bounce_charges_overdue must be a number' })
   bounce_charges_overdue?: number;
 
   @IsOptional()
   @IsInt()
   status_code?: number;
+
+  // Newly added fields
+  @IsOptional()
+  @IsNumber({}, { message: 'total_payable_amount must be a number' })
+  total_payable_amount?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'amount_paid must be a number' })
+  amount_paid?: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'outstanding_amount must be a number' })
+  outstanding_amount?: number;
+
+  @IsOptional()
+  @IsString()
+  current_status?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'loan_interest_payable_amount must be a number' })
+  loan_interest_payable_amount?: number;
 
   constructor(init?: Partial<FetchPayableAmountResponseDto>) {
     Object.assign(this, init);
@@ -125,7 +145,7 @@ export class FetchPayableAmountResponseDto {
 
 export class ErrorResponseDto {
   @IsInt()
-  status_code!: Number;
+  status_code!: number;
 
   @IsString()
   error_code!: string;
