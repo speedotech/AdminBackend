@@ -131,4 +131,12 @@ export class LeadsService {
 
     return { message: 'Lead status updated successfully' };
   }
+
+  async getLeadDetails(leadId: number) {
+    const lead = await this.leadsRepository.findOne({ where: { lead_id: leadId } });
+    if (!lead) {
+      throw new NotFoundException(`Lead with ID ${leadId} not found`);
+    }
+    return lead;
+  }
 }

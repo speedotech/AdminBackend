@@ -11,6 +11,7 @@ import { LoanModule } from './loan/loan.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthController } from './auth/auth.controller';
 import { HomeModule } from './home/home.module';
+import { BreModule } from './bre/bre.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { HomeModule } from './home/home.module';
     AuthModule,
     UsersModule,
     HomeModule,
+    BreModule,
   ],
   controllers: [AuthController], // ✅ Correct placement
 
