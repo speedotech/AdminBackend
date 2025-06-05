@@ -5,6 +5,7 @@ import { LeadBreRuleResult } from './entities/lead_bre_rule_result.entity';
 import { LeadsService } from 'src/leads/leads.service';
 import { MasterBreCategory } from './entities/master_bre_category.entity';
 import { BreRuleResultResponse } from './interfaces/bre-rule-result.interface';
+import { UpdateBreRuleResultDto } from './dtos/updateBreRuleResult.dto';
 
 @Injectable()
 export class BreService {
@@ -24,14 +25,8 @@ export class BreService {
       .getMany();
   }
 
-  async getLeadBreRuleResult(leadId: number): Promise<BreRuleResultResponse> {
-    const leadDetails = await this.leadsService.getLeadDetails(leadId);
-    
-    if(!leadDetails){
-      throw new NotFoundException(`Lead with ID ${leadId} not found`);
-    }
-
-    const leadBreRuleResult = await this.leadBreRuleResultRepository
+  async getBreRuleResult(leadId: number){
+    return this.leadBreRuleResultRepository
       .createQueryBuilder('LBRR')
       .select([
         'LBRR.lbrr_id',
@@ -52,12 +47,46 @@ export class BreService {
       .orderBy('MBC.m_bre_cat_id', 'ASC')
       .addOrderBy('LBRR.lbrr_rule_name', 'ASC')
       .getMany();
+  }
 
-    const masterBreCategory = await this.getMasterBreCategory();
+  async updateBreRuleResultDecisionId(leadId: number, lbrr_id: number, lbrr_rule_system_decision_id: number, lbrr_rule_manual_decision_id: number){
+    return this.leadBreRuleResultRepository.update({lbrr_id, lbrr_lead_id: leadId}, {
+      lbrr_rule_system_decision_id,
+      lbrr_rule_manual_decision_id
+    });
+  }
+
+  async getLeadBreRuleResult(leadId: number): Promise<BreRuleResultResponse> {
+    const leadDetails = await this.leadsService.getLeadDetails(leadId);
+    
+    if(!leadDetails){
+      throw new NotFoundException(`Lead with ID ${leadId} not found`);
+    }
+
+    const [leadBreRuleResult, masterBreCategory] = await Promise.all([
+      this.getBreRuleResult(leadId),
+      this.getMasterBreCategory()
+    ]);
 
     return {
       leadBreRuleResult,
       masterBreCategory
     };
+  }
+
+  async updateBreRuleResult(updateBreRuleResult: UpdateBreRuleResultDto){
+    const { lead_id: leadId, breRuleResult } = updateBreRuleResult;
+
+    const breRuleResultDetails = await this.getBreRuleResult(leadId);
+
+    if(breRuleResultDetails.length === 0){
+      throw new NotFoundException(`Bre Rule Result not found`);
+    }
+
+    for(const rule of breRuleResult){
+      await this.updateBreRuleResultDecisionId(leadId, rule.lbrr_id, rule.lbrr_rule_system_decision_id, rule.lbrr_rule_manual_decision_id);
+    }
+
+    return { message: 'Bre Rule Result updated successfully' };
   }
 }
